@@ -1,0 +1,61 @@
+shoken-model
+Copyright (c) 2026 Boss Ohkubo / Allfesta Corp.
+
+このリポジトリの `public/` に含まれる集計済みデータは、以下を加工して作成したものです。
+The aggregated data in `public/` is derived from the following sources.
+
+────────────────────────────────────────────────────────────
+Foursquare Open Source Places
+  https://opensource.foursquare.com/os-places/
+  Licensed under the Apache License, Version 2.0
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  本リポジトリの mesh.csv.gz のうち、業種別の店舗数・チェーンと個店の別・
+  コンビニのチェーン別の列（計38列）は、Foursquare OS Places を
+  500mメッシュに集計して作成しました。生のレコードは同梱していません。
+
+  Columns for store counts by format, chain/independent split, and
+  convenience-store brands (38 columns) are aggregations of Foursquare
+  OS Places onto 500 m mesh cells. No raw records are redistributed.
+
+────────────────────────────────────────────────────────────
+国土数値情報（国土交通省）
+  https://nlftp.mlit.go.jp/ksj/
+  政府標準利用規約（第2.0版）に準拠 / 出典表示のうえ利用
+
+  500mメッシュ別将来推計人口（H30国政局推計）／土地利用細分メッシュ L03-b-u ／
+  用途地域 A29 ／ 地価公示 L01 ／ 都道府県地価調査 L02 ／ 駅別乗降客数 S12
+  を加工して作成しました。
+
+────────────────────────────────────────────────────────────
+政府統計の総合窓口（e-Stat）／統計ダッシュボード（総務省統計局）
+  https://www.e-stat.go.jp/ , https://dashboard.e-stat.go.jp/
+  政府標準利用規約（第2.0版）に準拠 / 出典表示のうえ利用
+
+  経済センサス活動調査に関する地域メッシュ統計（統計表 T000918）および
+  昼夜間人口比率ほかの市区町村別指標を加工して作成しました。
+
+────────────────────────────────────────────────────────────
+OpenStreetMap contributors
+  https://www.openstreetmap.org/copyright
+  Open Database License (ODbL) 1.0
+
+  道路延長・駅・神社仏閣・城跡・温泉・港・歩行者専用道路の列は、
+  Geofabrik が配布する地域抽出（OpenStreetMap のデータ）を
+  500mメッシュに集計して作成しました。
+
+────────────────────────────────────────────────────────────
+開店データ（検証にのみ使用。生データは同梱していません）
+
+  国税庁「酒類販売業免許の新規取得者名等一覧」
+  厚生労働省「食品衛生申請等システム」オープンデータ
+  地方厚生局「コード内容別医療機関一覧表」
+  国土地理院「地名検索API・逆ジオコーディング」
+
+  いずれも政府標準利用規約に準拠し、出典表示のうえ利用しています。
+  public/openings_national_geo.csv は、国税庁の一覧から屋号・住所を抽出し、
+  国土地理院のAPIで座標化して**加工**したものです。
+────────────────────────────────────────────────────────────
+
+いずれの出典も、内容の正確性について本リポジトリの著者が保証するものではありません。
+加工にともなう誤りがあれば、それは著者の責任であり、出典元の責任ではありません。
