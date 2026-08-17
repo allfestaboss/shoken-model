@@ -1,0 +1,58 @@
+cff-version: 1.2.0
+message: "本ソフトウェアを利用した場合は、以下を引用してください。 / If you use this software, please cite it as below."
+type: software
+
+title: "shoken-model: 全国471,024メッシュで測った店舗立地の予測可能性"
+
+abstract: >-
+  Fits Poisson location models for 30 retail, food-service and personal-service
+  formats over all 471,024 inhabited 500 m mesh cells of Japan (125.3 million
+  people), and validates them prospectively against 74,507 actual store openings
+  drawn from three public licensing registries.
+
+  Four principal results. (1) Ranking empty cells works: the top 10% of cells
+  captured 75.1% of new convenience stores, a 7.5x lift (95% CI 7.3-7.7).
+  (2) A single national model suffices; coefficients fitted on one prefecture
+  transfer to the other 46 with a penalty of at most 0.031 AUC, even though
+  individual coefficients vary threefold across prefectures. (3) The direction
+  of the question matters: where a given format goes is predictable, but which
+  format appears in a given cell is not (mean AUC 0.508), because population,
+  employment, roads, stations and land use push every format the same way.
+  (4) Daytime employment is the only feature that helps; age structure, land
+  price, station ridership and building counts add nothing, and the latter two
+  are absorbed by employment.
+
+  Clustering is then decomposed. Chain agglomeration is dominant-strategy
+  expansion — a chain's own local share discriminates its openings from rivals'
+  at AUC 0.57-0.93 — while independent-store agglomeration repels chains and is
+  not explained by terrain, history or zoning (at most 31% of the explainable
+  residual, and mostly by neighbouring residuals rather than any site attribute).
+
+  全国471,024メッシュ・30業種の立地を、公的な許認可3系統から集めた74,507件の
+  実際の開店で前向きに検証した記録。まだ1店も無いマスの順位づけは7.5倍で当たり、
+  全国1つのモデルで足りる。ただし「どこか」は当てられても「何の店か」は当てられない。
+  効いた特徴量は従業者数だけで、集積の正体はドミナント出店だった。
+
+authors:
+  - family-names: "Ohkubo"
+    given-names: "Boss"
+    affiliation: "Allfesta Corp."
+    orcid: "https://orcid.org/0009-0007-8300-0039"
+
+version: "1.0.0"
+date-released: "2026-08-18"
+license: MIT
+
+repository-code: "https://github.com/allfestaboss/shoken-model"
+
+keywords:
+  - retail location
+  - store location
+  - central place theory
+  - agglomeration
+  - dominant strategy
+  - spatial statistics
+  - Poisson regression
+  - 500m mesh
+  - Japan
+  - open government data
