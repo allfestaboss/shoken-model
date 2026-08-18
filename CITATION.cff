@@ -43,6 +43,17 @@ version: "1.0.0"
 date-released: "2026-08-18"
 license: MIT
 
+# この版（v1.0.0）を指す DOI
+doi: "10.5281/zenodo.21989890"
+
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.21989889"
+    description: "Concept DOI — 常に最新版に解決する。版を問わず本ソフトウェアを引用する場合はこちら。"
+  - type: doi
+    value: "10.5281/zenodo.21989890"
+    description: "Version DOI — v1.0.0 を指す。結果の再現性を担保する場合はこちら。"
+
 repository-code: "https://github.com/allfestaboss/shoken-model"
 
 keywords:
