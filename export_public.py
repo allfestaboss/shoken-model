@@ -42,6 +42,34 @@ HIST = ["h_shinto", "h_temple", "h_castle", "h_onsen", "h_harbour",
 
 COPY = ["openings_national_geo.csv", "openings_by_format.csv", "chain_names.csv"]
 
+# 同じ業態を数える列が2組ある。読む人が必ずつまずくので、生成物に必ず書く。
+# **ここに書く。COLUMNS.md に手で足すと、次に export_public.py を走らせたとき消える。**
+TWO_SETS = """## 店舗数の列が2組ある理由
+
+同じ業態を数える列が2組ある。**誤りではなく、集計の仕方が違う。**
+
+| 組 | 作った所 | 重複の畳み | ドラッグの扱い |
+|---|---|---|---|
+| `stores_fsq` `drug_fsq` `super_fsq` | `build_mesh_fsq.py` | 40m以内の同カテゴリを1件に畳む | 薬局＋ドラッグストアの合計 |
+| `conv` `drug` `super` ほか30業種 | `fetch_formats.py` | 畳まない（DuckDB側で集計） | `drug`（ドラッグ）と `pharmacy`（薬局）を別列 |
+
+全国の合計で比べると:
+
+| 業態 | `*_fsq` | `formats`系 | 比 | 相関 |
+|---|---|---|---|---|
+| コンビニ | 65,085 | 67,470 | 1.04 | 0.986 |
+| スーパー | 15,884 | 15,895 | 1.00 | 0.978 |
+| ドラッグ | 58,111 | 29,499 | 0.51 | 0.834 |
+
+ドラッグが半分なのは定義の違い（29,499 + 薬局31,312 = 60,811 で、畳んだ58,111とほぼ一致）。
+
+**結論の数字はどちらでも変わらない。**同じ前向き検証を2組で回すと、
+まだ1店も無いマスの上位10%捕捉は `*_fsq` 7.5倍 / `formats`系 7.5倍で一致する。
+
+- 7.5倍などの検証（`measure_national.py`）は `*_fsq` を使う
+- 30業種のAUC表は `formats` 系を使う
+"""
+
 
 def main() -> None:
     OUT.mkdir(exist_ok=True)
@@ -81,6 +109,7 @@ def main() -> None:
             have = [c for c in cs if c in src[0]]
             f.write(f"## {name}（{len(have)}列）\n\n")
             f.write("`" + "` `".join(have) + "`\n\n")
+        f.write(TWO_SETS)
     print(f"-> {doc}")
 
 
