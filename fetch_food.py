@@ -20,6 +20,8 @@ CSVには緯度経度・初回許可年月日・廃業年月日・業態が入�
   python3 fetch_food.py --codes 40000,40130
 """
 import gzip
+import io
+import shutil
 import sys
 import time
 import urllib.request
@@ -75,7 +77,12 @@ def main() -> None:
                 failed += 1
                 print(f"  [{i}/{len(targets)}] {code} {name}: CSVでない（{len(body):,}B）")
                 continue
-            out.write_bytes(gzip.compress(body, 6))
+            # mtime=0 で書く。gzip は既定で圧縮時刻を埋め込むので、
+            # 同じ中身でも走らせるたびにバイトが変わる（版の重複判定が壊れる）
+            buf = io.BytesIO()
+            with gzip.GzipFile(fileobj=buf, mode="wb", compresslevel=6, mtime=0) as gz:
+                gz.write(body)
+            out.write_bytes(buf.getvalue())
             got += 1
             total += out.stat().st_size
             print(f"  [{i}/{len(targets)}] {code} {name}  "
@@ -84,6 +91,28 @@ def main() -> None:
             failed += 1
             print(f"  [{i}/{len(targets)}] {code} {name}: {type(e).__name__}")
         time.sleep(SLEEP)
+
+    # 中身が前の版と同じなら版を作らない。
+    # このデータは「前月までに公開されたもの」なので、月の途中で取ると
+    # 前回とまったく同じものが返ることがある。それを別の版として積むと
+    # **差分が0件になり「閉店なし」と誤読する**。同じなら版ごと捨てる。
+    others = sorted(d for d in SNAP.glob("*") if d.is_dir() and d != dest)
+    if others and got:
+        prev = others[-1]
+        # **展開してから比べる。**gzip は圧縮時刻を埋め込むので、
+        # バイトのまま比べると中身が同じでも必ず食い違う（実際に踏んだ）
+        def same_content(a, b):
+            try:
+                return gzip.decompress(a.read_bytes()) == gzip.decompress(b.read_bytes())
+            except Exception:  # noqa: BLE001
+                return False
+        same = all((prev / f.name).exists() and same_content(prev / f.name, f)
+                   for f in sorted(dest.glob("*.gz")))
+        if same and len(list(dest.glob("*.gz"))) == len(list(prev.glob("*.gz"))):
+            shutil.rmtree(dest)
+            print(f"\n[{date.today()}] 版 {tag}: 中身が {prev.name} と同じだったので"
+                  f"版を作らなかった（公表がまだ更新されていない）")
+            return
 
     print(f"\n[{date.today()}] 版 {tag}: 新規 {got} / 既存 {skipped} / 失敗 {failed}"
           f" / 合計 {total/1048576:,.0f}MB")
