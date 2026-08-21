@@ -14,7 +14,9 @@ cd /root/apps/shoken-collect
 PY=/usr/bin/python3
 REPORT=data/food/REPORT.md
 STAMP=$(date '+%Y-%m-%d %H:%M')
-[ -f .env ] && . ./.env
+# set -a を挟まないと、source しただけではシェル変数どまりで
+# Python の os.environ に渡らない（KeyError で落ちる）
+set -a; [ -f .env ] && . ./.env; set +a
 
 before=$(ls -d data/food/snapshots/*/ 2>/dev/null | wc -l | tr -d ' ')
 $PY fetch_food.py
@@ -22,18 +24,30 @@ $PY fetch_licenses.py
 after=$(ls -d data/food/snapshots/*/ 2>/dev/null | wc -l | tr -d ' ')
 pdfs=$(ls data/nta/*.pdf 2>/dev/null | wc -l | tr -d ' ')
 
+# 送り先の変数名と見た目は、既にVPSで動いている news-digest / quake-watch に合わせる
+#   変数名  DISCORD_WEBHOOK_URL（無ければ DISCORD_WEBHOOK）
+#   見た目  embeds（title / description / color / footer）
 notify() {
-  [ -n "${DISCORD_WEBHOOK:-}" ] || return 0
-  $PY - "$1" <<'PYEOF'
-import json, sys, os, urllib.request
-url = os.environ["DISCORD_WEBHOOK"]
-body = json.dumps({"content": sys.argv[1]}).encode()
-req = urllib.request.Request(url, data=body,
-                             headers={"Content-Type": "application/json"})
+  local hook="${DISCORD_WEBHOOK_URL:-${DISCORD_WEBHOOK:-}}"
+  [ -n "$hook" ] || return 0
+  WEBHOOK="$hook" $PY - "$1" "$2" <<'PYEOF'
+import json, os, sys, urllib.request
+body = json.dumps({"embeds": [{
+    "title": sys.argv[1],
+    "description": sys.argv[2][:4000],
+    "color": 0x1F5C55,
+    "footer": {"text": "商圏モデル / shoken-model・VPSの定期収集"},
+}]}).encode()
+req = urllib.request.Request(
+    os.environ["WEBHOOK"], data=body,
+    # Discord(Cloudflare)は名乗らない urllib を 403 code 1010 で弾く。
+    # curl は通るのに urllib だけ落ちるときはこれ。VPSの news-digest にも同じ注記がある
+    headers={"Content-Type": "application/json",
+             "User-Agent": "shoken-model (+https://shoken.monosashi.work, 1.0)"})
 try:
     urllib.request.urlopen(req, timeout=20)
 except Exception as e:
-    print(f"  通知できず {type(e).__name__}")
+    print(f"  通知できず {type(e).__name__}: {e}")
 PYEOF
 }
 
@@ -50,7 +64,7 @@ OUT=$($PY diff_food.py 2>&1 | tail -12)
 echo "$OUT"
 { echo "版が ${before} → ${after} に増えた。酒販免許PDF ${pdfs}本。"
   echo '```'; echo "$OUT"; echo '```'; } >> "$REPORT"
-notify "**商圏モデル: 閉店データが貯まりました**（版 ${before} → ${after}）
-\`\`\`
-$(echo "$OUT" | head -8)
+notify "閉店データが貯まりました（版 ${before} → ${after}）" \
+       "\`\`\`
+$(echo "$OUT" | head -10)
 \`\`\`"
